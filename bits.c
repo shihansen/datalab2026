@@ -19,7 +19,7 @@
  * Difficulty: 1
  */
 int bitAnd(int x, int y) {
-    return 2;
+    return ~ ((~ x) | (~ y));
 }
 
 /*
@@ -30,7 +30,7 @@ int bitAnd(int x, int y) {
  *   Difficulty: 1
  */
 int bitXor(int x, int y) {
-    return 2;
+    return (~ (x & y)) & (~ (~x & ~y));
 }
 
 /*
@@ -50,7 +50,17 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
-    return 2;
+    if (! x) {
+        if (! y)
+            return 1;
+        else 
+            return 0;
+    }
+
+    if (! y)
+        return 0;
+    
+    return !((x >> 31 & 1) ^ (y >> 31 & 1));
 }
 
 /*
@@ -63,7 +73,23 @@ int samesign(int x, int y) {
  *   Difficulty: 4
  */
 int logtwo(int v) {
-    return 2;
+    int ans = 0;
+    int b1 = ((65535) < v) << 4;
+    ans |= b1;
+    v >>= b1;
+    b1 = ((255) < v) << 3;
+    ans |= b1;
+    v >>= b1;    
+    b1 = ((15) < v) << 2;
+    ans |= b1;
+    v >>= b1;
+    b1 = ((3) < v) << 1;
+    ans |= b1;
+    v >>= b1;
+    b1 = ((1) < v);
+    ans |= b1;
+    v >>= b1;
+    return ans;
 }
 
 /*
@@ -76,7 +102,11 @@ int logtwo(int v) {
  *    Difficulty: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+    n <<= 3; m <<= 3;
+    int b1 = (x >> n) & 255;
+    int b2 = (x >> m) & 255;
+    x ^= (b1 << n) ^ (b2 << n) ^ (b1 << m) ^ (b2 << m);
+    return x;
 }
 
 /*
@@ -88,7 +118,12 @@ int byteSwap(int x, int n, int m) {
  *   Difficulty: 3
  */
 unsigned reverse(unsigned v) {
-    return 2;
+    v = ((v & 0x55555555u) << 1) | ((v >> 1) & 0x55555555u);
+    v = ((v & 0x33333333u) << 2) | ((v >> 2) & 0x33333333u);
+    v = ((v & 0x0F0F0F0Fu) << 4) | ((v >> 4) & 0x0F0F0F0Fu);
+    v = ((v & 0x00FF00FFu) << 8) | ((v >> 8) & 0x00FF00FFu);
+    v = (v << 16) | (v >> 16);
+    return v;
 }
 
 /*
@@ -100,7 +135,9 @@ unsigned reverse(unsigned v) {
  *   Difficulty: 3
  */
 int logicalShift(int x, int n) {
-    return 2;
+    int v = !! n;
+    int e = 0x7fffffff;
+    return ((x >> n) & (e >> ((n + 31) & 31))) | (x & ((~v) + v + v));
 }
 
 /*
@@ -112,7 +149,39 @@ int logicalShift(int x, int n) {
  *   Difficulty: 4
  */
 int leftBitCount(int x) {
-    return 2;
+    int ans = 0, b;
+    b = (x >> 16) & 65535;
+    b = (b + 1) & 65535;
+    b = !b;
+    ans = ans + (b << 4);
+    x >>= (!b) << 4;
+
+    b = (x >> 8) & 255;
+    b = (b + 1) & 255;
+    b = !b;
+    ans = ans + (b << 3);
+    x >>= (!b) << 3;   
+
+    b = (x >> 4) & 15;
+    b = (b + 1) & 15;
+    b = !b;
+    ans = ans + (b << 2);
+    x >>= (!b) << 2;  
+
+    b = (x >> 2) & 3;
+    b = (b + 1) & 3;
+    b = !b;
+    ans = ans + (b << 1);
+    x >>= (!b) << 1;
+
+    b = (x >> 1) & 1;
+    b = (b + 1) & 1;
+    b = !b;
+    ans = ans + (b);
+    x >>= (!b);
+
+    ans += x & 1;
+    return ans;
 }
 
 /*
