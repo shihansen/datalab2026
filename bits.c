@@ -193,7 +193,43 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
-    return 2;
+    unsigned int ans = 0;
+
+    if (x == -2147483648)
+        return 0xcf000000u; 
+    if (! x)
+        return 0u;
+
+    if (x < 0) {
+        ans = 2147483648u;
+        x = -x;
+    }
+        
+    int h = 0;
+    for (int i = 0; i < 31; i ++)
+        if (x >> i)
+            h = i;
+    x -= (1 << h);
+        
+    ans |= (h + 127) << 23;
+
+    if (h <= 23) {
+        ans |= x << (23 - h);
+    } else {
+        int p = h - 23;
+        ans |= x >> p;
+        unsigned msk = (1u << p) - 1;
+        x &= msk;
+        p --;
+        p = 1 << p;
+        if (x > p)
+            ans += 1;
+        else if (x == p) {
+            ans += ans & 1;
+        }
+    }
+
+    return ans;
 }
 
 /*
@@ -208,7 +244,19 @@ unsigned float_i2f(int x) {
  *   Difficulty: 4
  */
 unsigned floatScale2(unsigned uf) {
-    return 2;
+    unsigned exp = (uf >> 23) & 255u;
+    if (exp == 255)
+        return uf;
+    int b = uf & 8388607u;
+    if (exp == 0) {
+        if (b < (1 << 22))
+            return uf + b;
+        return ((uf & 4286578688u) + (b << 1 & 8388607u) + (1u << 23));
+    } else if (exp == 254) {
+        return (uf + (1u << 23)) & 4286578688u;
+    } 
+
+    return uf + (1u << 23);        
 }
 
 /*
@@ -225,7 +273,23 @@ unsigned floatScale2(unsigned uf) {
  *   Difficulty: 3
  */
 int float64_f2i(unsigned uf1, unsigned uf2) {
-    return 2;
+    unsigned exp = (uf2 >> 20) & 2047u;
+    if (exp >= 1054)
+        return 0x80000000;
+    if (exp < 1023)
+        return 0;
+    exp -= 1023;
+    unsigned ans = (uf2 & 1048575u) + (1u << 20);
+    if (exp <= 20)
+        ans >>= (20 - exp);
+    else {
+        ans <<= (exp - 20);
+        ans |= uf1 >> (52 - exp);
+    }
+
+    if (uf2 >> 31)
+        return -ans;
+    return ans;
 }
 
 /*
@@ -242,5 +306,14 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
  *   Difficulty: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if (x > 127)
+        return 2139095040u;
+    
+    if (x < -149)
+        return 0u;
+
+    if (x < -126)
+        return 1u << (x + 149);
+
+    return (x + 127) << 23;
 }
