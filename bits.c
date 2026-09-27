@@ -213,7 +213,7 @@ unsigned float_i2f(int x) {
         
     ans |= (h + 127) << 23;
 
-    if (h <= 23) {
+    if (h < 24) {
         ans |= x << (23 - h);
     } else {
         int p = h - 23;
